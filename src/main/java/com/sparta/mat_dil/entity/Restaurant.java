@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,14 +49,16 @@ public class Restaurant extends Timestamped {
         this.description = requestDto.getDescription();
     }
 
-    public Long updateLike(boolean islike){
-        if(islike){this.likeCount += 1;}
-        else{this.likeCount -= 1;}
-        return this.likeCount;
-    }
-
     public void addRestaurantLike(RestaurantLike restaurantLike) {
         this.restaurantLikes.add(restaurantLike);
         restaurantLike.setRestaurant(this);
+    }
+
+    public void updateLike(boolean isLike) {
+        if (isLike) {
+            this.likeCount += 1;
+        } else {
+            this.likeCount -= 1;
+        }
     }
 }

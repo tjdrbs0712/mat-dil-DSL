@@ -31,7 +31,7 @@ public class Order extends Timestamped {
     @Column(nullable = false)
     private int total_price;
 
-    @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetails> orderDetailsList = new ArrayList<>();
 
     public Order(User user, Restaurant restaurant) {

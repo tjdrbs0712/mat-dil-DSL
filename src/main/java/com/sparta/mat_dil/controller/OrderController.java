@@ -4,16 +4,13 @@ import com.sparta.mat_dil.dto.OrderDetailDataDto;
 import com.sparta.mat_dil.dto.OrderRequestDto;
 import com.sparta.mat_dil.dto.OrderResponseDto;
 import com.sparta.mat_dil.enums.ResponseStatus;
-import com.sparta.mat_dil.repository.OrderRepository;
 import com.sparta.mat_dil.security.UserDetailsImpl;
 import com.sparta.mat_dil.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.SQLOutput;
 import java.util.List;
 
 @RestController
@@ -22,7 +19,6 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
-    private final OrderRepository orderRepository;
 
     @PostMapping("/{restaurantsId}")
     public ResponseEntity<OrderDetailDataDto<List<OrderResponseDto>>> createOrder(@PathVariable Long restaurantsId, @RequestBody OrderRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {

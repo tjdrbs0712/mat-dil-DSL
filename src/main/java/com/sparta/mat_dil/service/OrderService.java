@@ -41,6 +41,7 @@ public class OrderService {
             foodList.add(food);
             order.sumPrice(food.getPrice());
             sum += food.getPrice();
+            order.addOrderDetails(orderDetails);
             orderDetailsRepository.save(orderDetails);
         }
 

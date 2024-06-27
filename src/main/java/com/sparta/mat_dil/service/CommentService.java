@@ -2,7 +2,6 @@ package com.sparta.mat_dil.service;
 
 import com.sparta.mat_dil.dto.CommentRequestDto;
 import com.sparta.mat_dil.dto.CommentResponseDto;
-import com.sparta.mat_dil.dto.PasswordRequestDto;
 import com.sparta.mat_dil.entity.Comment;
 import com.sparta.mat_dil.entity.Restaurant;
 import com.sparta.mat_dil.entity.User;
@@ -11,7 +10,6 @@ import com.sparta.mat_dil.exception.CustomException;
 import com.sparta.mat_dil.repository.CommentRepository;
 import com.sparta.mat_dil.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.codec.CodecException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

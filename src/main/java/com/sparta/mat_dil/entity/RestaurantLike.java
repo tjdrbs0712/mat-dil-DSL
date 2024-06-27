@@ -1,6 +1,7 @@
 package com.sparta.mat_dil.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,15 +22,15 @@ public class RestaurantLike extends Timestamped {
     private Restaurant restaurant;
 
     @Column(nullable = false)
-    private boolean Liked;
+    private boolean Liked = true;
 
+    @Builder
     public RestaurantLike(User user, Restaurant restaurant) {
         this.user = user;
         this.restaurant = restaurant;
-        this.Liked = false;
     }
 
-    public void update() {
+    public void updateLike() {
         this.Liked = !this.Liked;
     }
 

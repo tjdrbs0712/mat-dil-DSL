@@ -1,6 +1,7 @@
 package com.sparta.mat_dil.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,15 +22,15 @@ public class CommentLike extends Timestamped {
     private Comment comment;
 
     @Column(nullable = false)
-    private boolean Liked = false;
+    private boolean Liked = true;
 
+    @Builder
     public CommentLike(User user, Comment comment) {
         this.user = user;
         this.comment = comment;
-        this.Liked = false;
     }
 
-    public void update() {
+    public void updateLike() {
         this.Liked = !this.Liked;
     }
 
