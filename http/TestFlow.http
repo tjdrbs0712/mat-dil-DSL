@@ -5,10 +5,10 @@ POST http://localhost:8080/users
 Content-Type: application/json
 
 {
-  "accountId": "consumer0",
+  "accountId": "consumer1",
   "password": "Consumer0!",
   "name": "구매자",
-  "email": "consumer@gmail.com",
+  "email": "consumer1@gmail.com",
   "userType" : "CONSUMER"
 }
 
@@ -18,7 +18,7 @@ POST http://localhost:8080/users/login
 Content-Type: application/json
 
 {
-  "accountId": "consumer0",
+  "accountId": "consumer1",
   "password": "Consumer0!"
 }
 

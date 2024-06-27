@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Entity
@@ -14,15 +16,17 @@ public class CommentLike extends Timestamped {
     private Long id;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "comment_id", nullable = false)
     private Comment comment;
 
     @Column(nullable = false)
-    private boolean Liked = true;
+    private boolean liked = true;
 
     @Builder
     public CommentLike(User user, Comment comment) {
@@ -31,13 +35,6 @@ public class CommentLike extends Timestamped {
     }
 
     public void updateLike() {
-        this.Liked = !this.Liked;
-    }
-
-    public void setComment(Comment comment){
-        this.comment = comment;
-        if(comment != null && !comment.getCommentLikes().contains(this)){
-            comment.getCommentLikes().add(this);
-        }
+        this.liked = !this.liked;
     }
 }

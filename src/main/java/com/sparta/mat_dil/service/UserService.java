@@ -97,32 +97,8 @@ public class UserService {
     @Transactional
     public ProfileResponseDto update(Long userId, ProfileRequestDto requestDto) {
         User user = findById(userId);
-        String newEncodePassword = null;
 
-        // 비밀번호 수정 시
-        if (requestDto.getPassword() != null) {
-            // 본인 확인을 위해 현재 비밀번호를 입력하여 올바른 경우
-            if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-                throw new CustomException(ErrorType.INVALID_PASSWORD);
-            }
-            //현재 비밀번호와 동일한 비밀번호로는 변경할 수 없음
-            if (requestDto.getPassword().equals(requestDto.getNewPassword())) {
-                throw new CustomException(ErrorType.PASSWORD_RECENTLY_USED);
-            }
-            System.out.println("adasdadasda\n\n\n\n");
-            // 최근 3번 안에 사용한 비밀번호는 사용할 수 없도록 제한
-            List<PasswordHistory> recentPasswords = passwordHistoryRepository.findTop3ByUserOrderByChangeDateDesc(user);
-            boolean isInPreviousPasswords = recentPasswords.stream()
-                    .anyMatch(pw -> passwordEncoder.matches(requestDto.getNewPassword(), pw.getPassword()));
-            if (isInPreviousPasswords) {
-                throw new CustomException(ErrorType.PASSWORD_RECENTLY_USED);
-            }
-
-            newEncodePassword = passwordEncoder.encode(requestDto.getNewPassword());
-
-            PasswordHistory passwordHistory = new PasswordHistory(user, newEncodePassword);
-            passwordHistoryRepository.save(passwordHistory);
-        }
+        String newEncodePassword = updatePasswordIfNeeded(user, requestDto);
 
         user.update(
                 Optional.ofNullable(newEncodePassword),
@@ -132,6 +108,46 @@ public class UserService {
 
         return new ProfileResponseDto(user);
     }
+
+    private String updatePasswordIfNeeded(User user, ProfileRequestDto requestDto) {
+        if (requestDto.getPassword() == null) {
+            return null;
+        }
+
+        validateCurrentPassword(user, requestDto.getPassword());
+        validateNewPassword(requestDto.getPassword(), requestDto.getNewPassword(), user);
+
+        String newEncodePassword = passwordEncoder.encode(requestDto.getNewPassword());
+
+        savePasswordHistory(user, newEncodePassword);
+
+        return newEncodePassword;
+    }
+
+    private void validateCurrentPassword(User user, String currentPassword) {
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new CustomException(ErrorType.INVALID_PASSWORD);
+        }
+    }
+
+    private void validateNewPassword(String currentPassword, String newPassword, User user) {
+        if (currentPassword.equals(newPassword)) {
+            throw new CustomException(ErrorType.PASSWORD_RECENTLY_USED);
+        }
+
+        List<PasswordHistory> recentPasswords = passwordHistoryRepository.findTop3ByUserOrderByChangeDateDesc(user);
+        boolean isInPreviousPasswords = recentPasswords.stream()
+                .anyMatch(pw -> passwordEncoder.matches(newPassword, pw.getPassword()));
+        if (isInPreviousPasswords) {
+            throw new CustomException(ErrorType.PASSWORD_RECENTLY_USED);
+        }
+    }
+
+    private void savePasswordHistory(User user, String newEncodePassword) {
+        PasswordHistory passwordHistory = new PasswordHistory(user, newEncodePassword);
+        passwordHistoryRepository.save(passwordHistory);
+    }
+
 
     @Transactional
     public void logout(User user, HttpServletResponse res, HttpServletRequest req) {

@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DialectOverride;
+import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +37,12 @@ public class Restaurant extends Timestamped {
     @Column
     private Boolean pinned;
 
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RestaurantLike> restaurantLikes = new ArrayList<>();
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DeleteStatus deleteStatus = DeleteStatus.ACTIVE;
 
     public Restaurant(User loginUser, RestaurantRequestDto requestDto) {
+
         this.user = loginUser;
         this.restaurantName = requestDto.getRestaurantName();
         this.description = requestDto.getDescription();
@@ -49,16 +53,19 @@ public class Restaurant extends Timestamped {
         this.description = requestDto.getDescription();
     }
 
-    public void addRestaurantLike(RestaurantLike restaurantLike) {
-        this.restaurantLikes.add(restaurantLike);
-        restaurantLike.setRestaurant(this);
-    }
-
     public void updateLike(boolean isLike) {
         if (isLike) {
             this.likeCount += 1;
         } else {
             this.likeCount -= 1;
         }
+    }
+
+    public void softDelete() {
+        this.deleteStatus = DeleteStatus.DELETED;
+    }
+
+    public void restore() {
+        this.deleteStatus = DeleteStatus.ACTIVE;
     }
 }

@@ -1,10 +1,7 @@
 package com.sparta.mat_dil.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +28,7 @@ public class Order extends Timestamped {
     @Column(nullable = false)
     private int total_price;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderDetails> orderDetailsList = new ArrayList<>();
-
+    @Builder
     public Order(User user, Restaurant restaurant) {
         this.user = user;
         this.restaurant = restaurant;
@@ -41,10 +36,5 @@ public class Order extends Timestamped {
 
     public void sumPrice(int price) {
         this.total_price += price;
-    }
-
-    public void addOrderDetails(OrderDetails orderDetails){
-        this.orderDetailsList.add(orderDetails);
-        orderDetails.setOrder(this);
     }
 }

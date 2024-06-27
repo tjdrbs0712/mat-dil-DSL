@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Getter
@@ -14,10 +16,12 @@ public class RestaurantLike extends Timestamped {
     private Long id;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
@@ -32,12 +36,5 @@ public class RestaurantLike extends Timestamped {
 
     public void updateLike() {
         this.Liked = !this.Liked;
-    }
-
-    public void setRestaurant(Restaurant restaurant) {
-        this.restaurant = restaurant;
-        if (restaurant != null && !restaurant.getRestaurantLikes().contains(this)) {
-            restaurant.getRestaurantLikes().add(this);
-        }
     }
 }

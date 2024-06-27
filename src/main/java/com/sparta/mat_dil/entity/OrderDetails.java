@@ -17,7 +17,7 @@ public class OrderDetails extends Timestamped{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OnDelete(action = OnDeleteAction.NO_ACTION)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orders_id", nullable = false)
     private Order order;
@@ -33,13 +33,6 @@ public class OrderDetails extends Timestamped{
         this.order = order;
         this.food = food;
         this.price = price;
-    }
-
-    public void setOrder(Order order){
-        this.order = order;
-        if(order != null && order.getOrderDetailsList().contains(this)){
-            order.getOrderDetailsList().add(this);
-        }
     }
 }
 

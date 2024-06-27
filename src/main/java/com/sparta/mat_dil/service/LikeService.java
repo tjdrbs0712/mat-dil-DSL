@@ -45,7 +45,6 @@ public class LikeService {
                     .user(user)
                     .restaurant(restaurant)
                     .build();
-            restaurant.addRestaurantLike(restaurantLike);
             restaurantLikeRepository.save(restaurantLike);
         }
 
@@ -86,7 +85,6 @@ public class LikeService {
                     .user(user)
                     .comment(comment)
                     .build();
-            comment.addCommentLike(commentLike);
             commentLikeRepository.save(commentLike);
         }
 

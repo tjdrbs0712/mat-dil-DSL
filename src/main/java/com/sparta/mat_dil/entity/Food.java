@@ -27,6 +27,10 @@ public class Food extends Timestamped {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DeleteStatus deleteStatus = DeleteStatus.ACTIVE;
+
     public Food(Restaurant restaurant, FoodRequestDto foodRequestDto){
         this.foodName=foodRequestDto.getFoodName();
         this.price=foodRequestDto.getPrice();
@@ -37,6 +41,14 @@ public class Food extends Timestamped {
         this.foodName = requestDto.getFoodName();
         this.price=requestDto.getPrice();
         this.description = requestDto.getDescription();
+    }
+
+    public void softDelete() {
+        this.deleteStatus = DeleteStatus.DELETED;
+    }
+
+    public void restore() {
+        this.deleteStatus = DeleteStatus.ACTIVE;
     }
 }
 

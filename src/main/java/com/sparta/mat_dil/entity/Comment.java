@@ -33,9 +33,6 @@ public class Comment extends Timestamped {
     @Column(nullable = false)
     private Long likeCount = 0L;
 
-    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CommentLike> commentLikes = new ArrayList<>();
-
     @Builder
     public Comment(User user, Restaurant restaurant, String description) {
         this.user = user;
@@ -45,11 +42,6 @@ public class Comment extends Timestamped {
 
     public void update(String description){
         this.description = description;
-    }
-
-    public void addCommentLike(CommentLike commentLike){
-        this.commentLikes.add(commentLike);
-        commentLike.setComment(this);
     }
 
     public void updateLike(boolean isLike) {
