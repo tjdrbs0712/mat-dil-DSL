@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -28,16 +31,20 @@ public class Order extends Timestamped {
     @Column(nullable = false)
     private int total_price;
 
-    public void setTotalPrice(int totalPrice) {
-        this.total_price = totalPrice;
-    }
+    @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderDetails> orderDetailsList = new ArrayList<>();
 
-    public Order (User user, Restaurant restaurant) {
+    public Order(User user, Restaurant restaurant) {
         this.user = user;
         this.restaurant = restaurant;
     }
 
     public void sumPrice(int price) {
         this.total_price += price;
+    }
+
+    public void addOrderDetails(OrderDetails orderDetails){
+        this.orderDetailsList.add(orderDetails);
+        orderDetails.setOrder(this);
     }
 }

@@ -31,5 +31,12 @@ public class OrderDetails extends Timestamped{
         this.food = food;
         this.price = price;
     }
+
+    public void setOrder(Order order){
+        this.order = order;
+        if(order != null && order.getOrderDetailsList().contains(this)){
+            order.getOrderDetailsList().add(this);
+        }
+    }
 }
 

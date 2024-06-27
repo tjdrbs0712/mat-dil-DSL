@@ -5,13 +5,17 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "restaurant")
-public class Restaurant extends Timestamped{
+public class Restaurant extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,10 +31,13 @@ public class Restaurant extends Timestamped{
     private User user;
 
     @Column(nullable = false)
-    private Long likes = 0L;
+    private Long likeCount = 0L;
 
     @Column
     private Boolean pinned;
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RestaurantLike> restaurantLikes = new ArrayList<>();
 
     public Restaurant(User loginUser, RestaurantRequestDto requestDto) {
         this.user = loginUser;
@@ -44,8 +51,13 @@ public class Restaurant extends Timestamped{
     }
 
     public Long updateLike(boolean islike){
-        if(islike){this.likes += 1;}
-        else{this.likes -= 1;}
-        return this.likes;
+        if(islike){this.likeCount += 1;}
+        else{this.likeCount -= 1;}
+        return this.likeCount;
+    }
+
+    public void addRestaurantLike(RestaurantLike restaurantLike) {
+        this.restaurantLikes.add(restaurantLike);
+        restaurantLike.setRestaurant(this);
     }
 }

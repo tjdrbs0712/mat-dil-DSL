@@ -32,4 +32,11 @@ public class CommentLike extends Timestamped {
     public void update() {
         this.Liked = !this.Liked;
     }
+
+    public void setComment(Comment comment){
+        this.comment = comment;
+        if(comment != null && !comment.getCommentLikes().contains(this)){
+            comment.getCommentLikes().add(this);
+        }
+    }
 }

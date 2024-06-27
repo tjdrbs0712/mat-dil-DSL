@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
 @Entity
+@Getter
 @NoArgsConstructor
 public class RestaurantLike extends Timestamped {
     @Id
@@ -31,5 +31,12 @@ public class RestaurantLike extends Timestamped {
 
     public void update() {
         this.Liked = !this.Liked;
+    }
+
+    public void setRestaurant(Restaurant restaurant) {
+        this.restaurant = restaurant;
+        if (restaurant != null && !restaurant.getRestaurantLikes().contains(this)) {
+            restaurant.getRestaurantLikes().add(this);
+        }
     }
 }
