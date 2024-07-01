@@ -6,10 +6,7 @@ import com.sparta.mat_dil.entity.*;
 import com.sparta.mat_dil.enums.ErrorType;
 import com.sparta.mat_dil.enums.ResponseStatus;
 import com.sparta.mat_dil.exception.CustomException;
-import com.sparta.mat_dil.repository.FoodRepository;
-import com.sparta.mat_dil.repository.OrderDetailsRepository;
-import com.sparta.mat_dil.repository.OrderRepository;
-import com.sparta.mat_dil.repository.RestaurantRepository;
+import com.sparta.mat_dil.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,35 +22,84 @@ public class OrderService {
     private final FoodRepository foodRepository;
     private final RestaurantRepository restaurantRepository;
     private final OrderDetailsRepository orderDetailsRepository;
+    private final UserRepository userRepository;
 
 
     @Transactional
-    public OrderDetailDataDto<List<OrderResponseDto>> create(Long restaurantsId, List<Long> foodIdList, User user) {
-        Restaurant restaurant = restaurantRepository.findById(restaurantsId).get();
-        Order order = new Order(user, restaurant);
-        orderRepository.save(order);
+    public OrderDetailDataDto<List<OrderResponseDto>> create(Long restaurantId, List<Long> foodIdList, User user) {
+        validateUser(user);
+        Restaurant restaurant = validateRestaurant(restaurantId);
 
+        Order order = createOrder(user, restaurant);
+        List<Food> foodList = fetchFoods(foodIdList);
+        int totalSum = processOrderDetails(order, foodList);
+
+        List<OrderResponseDto> orderResponseList = createOrderResponseList(foodList);
+        return new OrderDetailDataDto<>(ResponseStatus.FOOD_CHECK_SUCCESS, orderResponseList, totalSum);
+    }
+
+    private Order createOrder(User user, Restaurant restaurant) {
+        Order order = Order.builder()
+                .user(user)
+                .restaurant(restaurant)
+                .build();
+        orderRepository.save(order);
+        return order;
+    }
+
+    private List<Food> fetchFoods(List<Long> foodIdList) {
         List<Food> foodList = new ArrayList<>();
-        int sum = 0;
-        for (int i = 0; i < foodIdList.size(); i++) {
-            Food food = foodRepository.findById(foodIdList.get(i)).orElseThrow(()->new CustomException(ErrorType.NOT_FOUND_FOOD));
-            OrderDetails orderDetails = new OrderDetails(order, food, food.getPrice());
+        for (Long foodId : foodIdList) {
+            Food food = foodRepository.findById(foodId)
+                    .orElseThrow(() -> new CustomException(ErrorType.NOT_FOUND_FOOD));
             foodList.add(food);
-            order.sumPrice(food.getPrice());
+        }
+        return foodList;
+    }
+
+    private int processOrderDetails(Order order, List<Food> foodList) {
+        int sum = 0;
+        for (Food food : foodList) {
+            OrderDetails orderDetails = new OrderDetails(order, food, food.getPrice());
             sum += food.getPrice();
+            order.sumPrice(food.getPrice());
             orderDetailsRepository.save(orderDetails);
         }
+        return sum;
+    }
 
-        List<OrderResponseDto> orderList = new ArrayList<>();
-        for(Food food : foodList) {
-            OrderResponseDto orders = new OrderResponseDto(food);
-            orderList.add(orders);
+    private List<OrderResponseDto> createOrderResponseList(List<Food> foodList) {
+        List<OrderResponseDto> orderResponseList = new ArrayList<>();
+        for (Food food : foodList) {
+            orderResponseList.add(new OrderResponseDto(food));
+        }
+        return orderResponseList;
+    }
+
+    /**
+     * 유저 검증
+     * @param user 로그인 유저
+     */
+    public void validateUser(User user){
+        userRepository.findById(user.getId()).orElseThrow(() ->
+                new CustomException(ErrorType.NOT_FOUND_USER));
+
+        if(user.getUserStatus().equals(UserStatus.DEACTIVATE)){
+            throw new CustomException(ErrorType.DEACTIVATE_USER);
         }
 
-        OrderDetailDataDto<List<OrderResponseDto>> orderDetailDataDto = new OrderDetailDataDto<>(ResponseStatus.FOOD_CHECK_SUCCESS, orderList, sum);
+        if(user.getUserStatus().equals(UserStatus.BLOCKED)){
+            throw new CustomException(ErrorType.BLOCKED_USER);
+        }
+    }
 
-        return orderDetailDataDto;
-
+    /**
+     * 레스토랑 검증
+     * @param restaurantId 레스토랑 id
+     */
+    public Restaurant validateRestaurant(Long restaurantId){
+        return restaurantRepository.findById(restaurantId).orElseThrow(() ->
+                new CustomException(ErrorType.NOT_FOUND_RESTAURANT));
     }
 
 

@@ -164,4 +164,5 @@ public class RestaurantController {
         restaurantService.deleteFood(restaurant_id, food_id, userDetails.getUser());
         return ResponseEntity.ok(new ResponseMessageDto(ResponseStatus.FOOD_DELETE_SUCCESS));
     }
+
 }

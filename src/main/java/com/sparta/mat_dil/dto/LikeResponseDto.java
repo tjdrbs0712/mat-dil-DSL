@@ -1,15 +1,21 @@
 package com.sparta.mat_dil.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 public class LikeResponseDto {
 
-    private final boolean Liked;
-    private final Long cnt;
+    private String name;
+    private String contents;
+    private Long likeCount;
+    private Boolean isLike;
 
-    public LikeResponseDto(boolean Liked, Long cnt) {
-        this.Liked = Liked;
-        this.cnt = cnt;
+    @Builder
+    public LikeResponseDto(String name, String contents, Long likeCount, Boolean isLike){
+        this.name = name;
+        this.contents = contents;
+        this.likeCount = likeCount;
+        this.isLike = isLike;
     }
 }

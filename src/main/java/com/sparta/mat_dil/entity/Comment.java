@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -30,10 +31,7 @@ public class Comment extends Timestamped {
     private String description;
 
     @Column(nullable = false)
-    private Long likes = 0L;
-
-    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CommentLike> commentLikes;
+    private Long likeCount = 0L;
 
     @Builder
     public Comment(User user, Restaurant restaurant, String description) {
@@ -46,9 +44,13 @@ public class Comment extends Timestamped {
         this.description = description;
     }
 
-    public Long updateLike(boolean isLike){
-        if(isLike){this.likes += 1;}
-        else{this.likes -= 1;}
-        return this.likes;
+    public void updateLike(boolean isLike) {
+        if (isLike) {
+            this.likeCount += 1;
+        } else {
+            this.likeCount -= 1;
+        }
     }
+
+
 }
