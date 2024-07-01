@@ -1,0 +1,170 @@
+### 1.구매자 회원가입
+POST http://localhost:8080/users
+Content-Type: application/json
+
+{
+  "accountId": "consumer1",
+  "password": "Consumer0!",
+  "name": "구매자",
+  "email": "consumer1@gmail.com",
+  "userType" : "CONSUMER"
+}
+
+
+### 2.구매자 로그인
+POST http://localhost:8080/users/login
+Content-Type: application/json
+
+{
+  "accountId": "consumer1",
+  "password": "Consumer0!"
+}
+
+### 6.로그아웃
+POST http://localhost:8080/users/logout
+Content-Type: application/json
+
+### 7.판매자 회원가입
+POST http://localhost:8080/users
+Content-Type: application/json
+
+{
+  "accountId": "supplier0",
+  "password": "Supplier0!",
+  "name": "판매자",
+  "email": "supplier@gmail.com",
+  "userType" : "SUPPLIER"
+
+}
+
+
+### 8.판매자 로그인
+POST http://localhost:8080/users/login
+Content-Type: application/json
+
+{
+  "accountId": "supplier0",
+  "password": "Supplier0!"
+}
+
+### 음식점 ID, 수정/삭제할 음식점 ID
+@id = 1
+@editId = 3
+
+
+### 9.음식점 생성 - 원할머니 보쌈 (id = 1)
+POST http://localhost:8080/restaurants
+Content-Type: application/json
+
+{
+  "restaurantName": "원할머니보쌈",
+  "description": "세상에서 가장 쫄깃하고 맛있는 보쌈집"
+}
+
+### 10.음식점 생성 - 스시앤스시 (id = 2)
+POST http://localhost:8080/restaurants
+Content-Type: application/json
+
+{
+  "restaurantName": "스시앤스시",
+  "description": "연어가 입안에서 요동치는 맛스시"
+}
+
+
+### 11.음식점 생성 - 돼지구이 (id = 3)
+POST http://localhost:8080/restaurants
+Content-Type: application/json
+
+{
+  "restaurantName": "돼지구이",
+  "description": "돼지고기가 일품인 고깃집"
+}
+
+############ [FLOW 3] 음식 생성 영역 #############
+###############################################
+### 음식점 ID, 음식 ID, 수정,삭제할 음식 ID
+@restaurantId = 1
+@foodId = 1
+@editFoodId = 3
+
+
+### 16.음식 등록 1 - 마늘 보쌈 (id = 1)
+POST http://localhost:8080/restaurants/{{restaurantId}}/foods
+Content-Type: application/json
+
+{
+  "foodName": "마늘보쌈",
+  "price": 20000,
+  "description": "한국인의 입맛, 마늘 보쌈"
+}
+
+
+### 17.음식 등록 2 - 쟁반 국수 (id = 2)
+POST http://localhost:8080/restaurants/{{restaurantId}}/foods
+Content-Type: application/json
+
+{
+  "foodName": "쟁반국수",
+  "price": 15000,
+  "description": "한국인의 매운 맛, 쟁반 국수"
+}
+
+
+### 18.음식 등록 3 - 족발 (id = 3)
+POST http://localhost:8080/restaurants/{{restaurantId}}/foods
+Content-Type: application/json
+
+{
+  "foodName": "족발",
+  "price": 24000,
+  "description": "야들야들한 족발이 매우 싸다!"
+}
+
+
+############ [FLOW 4] 댓글 생성 영역 #############
+###############################################
+### 음식점 ID, 댓글 ID, 수정/삭제할 댓글ID
+@restaurant_Id = 1
+@commentId = 1
+@editCommentId = 3
+
+### 26.댓글 등록 (id = 1)
+POST http://localhost:8080/restaurants/{{restaurant_Id}}/comments
+Content-Type: application/json
+
+{
+  "description": "음식이 정말 ㅁㅏㅅ있어요"
+}
+
+### 27.댓글 등록 (id = 2)
+POST http://localhost:8080/restaurants/{{restaurant_Id}}/comments
+Content-Type: application/json
+
+{
+  "description": "음식이 정말 ㅁㅏㅅ있어요"
+}
+
+### 28.댓글 등록 (id = 3)
+POST http://localhost:8080/restaurants/{{restaurant_Id}}/comments
+Content-Type: application/json
+
+{
+  "description": "음식이 정말 ㅁㅏㅅ있어요"
+}
+
+############ [FLOW 5] 좋아요 등록 영역 ############
+###############################################
+### 음식점 ID, 댓글 ID
+@restaurantId_like = 1
+@commentId_like = 1
+
+
+### 34.좋아요 등록 - 댓글
+PUT http://localhost:8080/restaurants/{{restaurantId_like}}/comment/{{commentId_like}}/like
+
+### 39.좋아요 등록 - 음식점
+PUT http://localhost:8080/restaurants/{{restaurantId_like}}/like
+
+
+### 좋아요 음식점 조회
+GET http://localhost:8080/users/restaurants/likes?page=1

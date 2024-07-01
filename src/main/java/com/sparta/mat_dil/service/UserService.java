@@ -1,33 +1,36 @@
 package com.sparta.mat_dil.service;
 
-import com.sparta.mat_dil.dto.PasswordRequestDto;
-import com.sparta.mat_dil.dto.ProfileRequestDto;
-import com.sparta.mat_dil.dto.ProfileResponseDto;
-import com.sparta.mat_dil.dto.UserRequestDto;
-import com.sparta.mat_dil.entity.PasswordHistory;
-import com.sparta.mat_dil.entity.User;
-import com.sparta.mat_dil.entity.UserStatus;
+import com.sparta.mat_dil.dto.*;
+import com.sparta.mat_dil.entity.*;
 import com.sparta.mat_dil.enums.ErrorType;
 import com.sparta.mat_dil.exception.CustomException;
 import com.sparta.mat_dil.jwt.JwtUtil;
-import com.sparta.mat_dil.repository.PasswordHistoryRepository;
-import com.sparta.mat_dil.repository.UserRepository;
+import com.sparta.mat_dil.repository.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j(topic = "유저 서비스")
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RestaurantRepository restaurantRepository;
+    private final CommentRepository commentRepository;
     private final PasswordHistoryRepository passwordHistoryRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -177,6 +180,42 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(
                 () -> new CustomException(ErrorType.NOT_FOUND_USER)
         );
+    }
+
+
+    public Page<RestaurantResponseDto> getLikeRestaurants(int page, User user) {
+        validateUser(user);
+        Sort.Direction direction = Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, "createdAt");
+        Pageable pageable = PageRequest.of(page, 5, sort);
+        Page<Restaurant> restaurants = restaurantRepository.findLikedRestaurantsByUser(user, pageable);
+        return restaurants.map(RestaurantResponseDto::new);
+    }
+
+    public Page<CommentResponseDto> getLikeComments(int page, User user) {
+        validateUser(user);
+        Sort.Direction direction = Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, "createdAt");
+        Pageable pageable = PageRequest.of(page, 5, sort);
+        Page<Comment> comments = commentRepository.findLikedCommentsByUser(user, pageable);
+        return comments.map(CommentResponseDto::new);
+    }
+
+    /**
+     * 유저 검증
+     * @param user 로그인 유저
+     */
+    public void validateUser(User user){
+        userRepository.findById(user.getId()).orElseThrow(() ->
+                new CustomException(ErrorType.NOT_FOUND_USER));
+
+        if(user.getUserStatus().equals(UserStatus.DEACTIVATE)){
+            throw new CustomException(ErrorType.DEACTIVATE_USER);
+        }
+
+        if(user.getUserStatus().equals(UserStatus.BLOCKED)){
+            throw new CustomException(ErrorType.BLOCKED_USER);
+        }
     }
 
 }

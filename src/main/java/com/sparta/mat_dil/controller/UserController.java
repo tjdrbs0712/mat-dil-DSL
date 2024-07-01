@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
+@Slf4j(topic = "유저 컨트롤러")
 public class UserController {
 
     private final UserService userService;
@@ -58,4 +61,21 @@ public class UserController {
         ProfileResponseDto responseDto = userService.update(userDetails.getUser().getId(), requestDto);
         return ResponseEntity.ok(new ResponseDataDto<>(ResponseStatus.PROFILE_UPDATE_SUCCESS, responseDto));
     }
+
+    @GetMapping("/restaurants/likes")
+    public ResponseEntity<ResponseDataDto<Page<RestaurantResponseDto>>> getLikeRestaurants(@RequestParam(value = "page") int page,
+                                                          @AuthenticationPrincipal UserDetailsImpl userDetails){
+        Page<RestaurantResponseDto> responseDtoPage = userService.getLikeRestaurants(page - 1, userDetails.getUser());
+
+        return ResponseEntity.ok(new ResponseDataDto<>(ResponseStatus.RESTAURANT_CHECK_SUCCESS, responseDtoPage));
+    }
+
+    @GetMapping("/comments/likes")
+    public ResponseEntity<ResponseDataDto<Page<CommentResponseDto>>> getLikeComments(@RequestParam(value = "page") int page,
+                                                                                           @AuthenticationPrincipal UserDetailsImpl userDetails){
+        Page<CommentResponseDto> commentResponseDto = userService.getLikeComments(page - 1, userDetails.getUser());
+
+        return ResponseEntity.ok(new ResponseDataDto<>(ResponseStatus.COMMENTS_CHECK_SUCCESS, commentResponseDto));
+    }
+
 }

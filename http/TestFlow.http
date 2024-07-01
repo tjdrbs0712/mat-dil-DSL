@@ -234,7 +234,7 @@ Content-Type: application/json
 
 {
   "accountId": "consumer0",
-  "password": "Consumer1!"
+  "password": "Consumer0!"
 }
 
 
@@ -293,7 +293,7 @@ Content-Type: application/json
 
 
 ### 31.좋아요 등록 댓글 - ※ 본인의 글이라 좋아요 불가능
-PUT http://localhost:8080/like/COMMENT/{{commentId}}
+PUT http://localhost:8080/restaurants/{{restaurantId_like}}/comment/{{commentId_like}}/like
 
 
 ### 32. 구매 아이디 로그아웃
@@ -345,7 +345,7 @@ Content-Type: application/json
 
 {
   "accountId": "consumer0",
-  "password": "Consumer1!"
+  "password": "Consumer0!"
 }
 
 
