@@ -15,4 +15,7 @@ import java.util.Optional;
 @Repository
 public interface RestaurantLikeRepository extends JpaRepository<RestaurantLike, Long> {
     Optional<RestaurantLike> findByUserAndRestaurant(User user, Restaurant restaurant);
+
+    @Query("select count(r) from RestaurantLike r where r.user = :user and r.liked = true")
+    Long countByUserAndLike(@Param("user") User user);
 }

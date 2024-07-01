@@ -12,6 +12,8 @@ public class ProfileResponseDto {
     private final String name;
     private final String intro;
     private final String role;
+    private Long restaurantLike;
+    private Long commentLike;
 
     public ProfileResponseDto(User user) {
         this.accountId = user.getAccountId();
@@ -21,4 +23,9 @@ public class ProfileResponseDto {
         this.role = String.valueOf(user.getUserType());
     }
 
+
+    public void updateLike(Long restaurantLike, Long commentLike){
+        this.restaurantLike = restaurantLike;
+        this.commentLike = commentLike;
+    }
 }
