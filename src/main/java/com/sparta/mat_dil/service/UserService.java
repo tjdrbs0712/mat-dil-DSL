@@ -31,6 +31,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final RestaurantRepository restaurantRepository;
     private final CommentRepository commentRepository;
+    private final RestaurantLikeRepository restaurantLikeRepository;
+    private final CommentLikeRepository commentLikeRepository;
     private final PasswordHistoryRepository passwordHistoryRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -172,8 +174,13 @@ public class UserService {
 
     }
 
-    public ProfileResponseDto getProfile(Long userId) {
-        return new ProfileResponseDto(findById(userId));
+    public ProfileResponseDto getProfile(User user) {
+        validateUser(user);
+        Long restaurantLike = restaurantLikeRepository.countByUserAndLike(user);
+        Long commentLike = commentLikeRepository.countByUserAndLike(user);
+        ProfileResponseDto profileResponseDto = new ProfileResponseDto(findById(user.getId()));
+        profileResponseDto.updateLike(restaurantLike, commentLike);
+        return profileResponseDto;
     }
 
     public User findById(Long id) {
