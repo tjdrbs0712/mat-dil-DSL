@@ -20,6 +20,9 @@ public enum ErrorType {
     NOT_ACCEPTED_COMMENT(HttpStatus.LOCKED, "본인의 음식점에는 댓글들 작성할 수 없습니다."),
     CONTENT_OWNER(HttpStatus.NOT_FOUND, "본인의 음식점과 댓글에는 ‘좋아요'를 추가할 수 없습니다."),
     PASSWORD_RECENTLY_USED(HttpStatus.LOCKED, "최근에 사용한 비밀번호는 사용할 수 없습니다."),
+    DUPLICATE_USER(HttpStatus.BAD_REQUEST, "동일한 유저입니다."),
+    ALREADY_FOLLOWING(HttpStatus.BAD_REQUEST, "이미 팔로워 중입니다."),
+    NOT_FOUND_FOLLOW(HttpStatus.NOT_FOUND, "팔로우한 유저가 아닙니다."),
 
     // restaurant,
     NOT_FOUND_RESTAURANT(HttpStatus.NOT_FOUND, "존재하지 않는 음식점입니다."),

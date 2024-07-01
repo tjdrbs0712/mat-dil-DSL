@@ -157,7 +157,7 @@ Content-Type: application/json
 ### 음식점 ID, 댓글 ID
 @restaurantId_like = 1
 @commentId_like = 1
-
+@followingId = 2
 
 ### 34.좋아요 등록 - 댓글
 PUT http://localhost:8080/restaurants/{{restaurantId_like}}/comment/{{commentId_like}}/like
@@ -168,3 +168,15 @@ PUT http://localhost:8080/restaurants/{{restaurantId_like}}/like
 
 ### 좋아요 음식점 조회
 GET http://localhost:8080/users/restaurants/likes?page=1
+
+### 팔로우 등록
+POST http://localhost:8080/users/{{followingId}}/follow
+
+### 팔로우 취소
+DELETE http://localhost:8080/users/{{followingId}}/follow
+
+
+
+### 6.로그아웃
+POST http://localhost:8080/users/logout
+Content-Type: application/json

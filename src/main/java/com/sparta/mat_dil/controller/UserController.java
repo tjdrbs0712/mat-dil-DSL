@@ -78,4 +78,20 @@ public class UserController {
         return ResponseEntity.ok(new ResponseDataDto<>(ResponseStatus.COMMENTS_CHECK_SUCCESS, commentResponseDto));
     }
 
+    @PostMapping("/{id}/follow")
+    public ResponseEntity<ResponseMessageDto> followUser(@PathVariable Long id,
+                                                         @AuthenticationPrincipal UserDetailsImpl userDetails){
+        userService.followUser(userDetails.getUser(), id);
+
+        return ResponseEntity.ok(new ResponseMessageDto(ResponseStatus.FOLLOW_SUCCESS));
+    }
+
+    @DeleteMapping("/{id}/follow")
+    public ResponseEntity<ResponseMessageDto> deleteFollowUser(@PathVariable Long id,
+                                                         @AuthenticationPrincipal UserDetailsImpl userDetails){
+        userService.deleteFollowUser(userDetails.getUser(), id);
+
+        return ResponseEntity.ok(new ResponseMessageDto(ResponseStatus.UNFOLLOW_SUCCESS));
+    }
+
 }

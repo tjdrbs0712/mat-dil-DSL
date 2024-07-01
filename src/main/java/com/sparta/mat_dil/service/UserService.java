@@ -33,6 +33,7 @@ public class UserService {
     private final CommentRepository commentRepository;
     private final RestaurantLikeRepository restaurantLikeRepository;
     private final CommentLikeRepository commentLikeRepository;
+    private final FollowRepository followRepository;
     private final PasswordHistoryRepository passwordHistoryRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -190,6 +191,12 @@ public class UserService {
     }
 
 
+    /**
+     * 음식점 좋아요 목록 조회
+     * @param page 조회할 페이지 번호
+     * @param user 로그인 유저
+     * @return 음식점 목록을 날짜순으로 정렬해서 반환
+     */
     public Page<RestaurantResponseDto> getLikeRestaurants(int page, User user) {
         validateUser(user);
         Sort.Direction direction = Sort.Direction.DESC;
@@ -199,6 +206,12 @@ public class UserService {
         return restaurants.map(RestaurantResponseDto::new);
     }
 
+    /**
+     * 댓글 좋아요 목록 조회
+     * @param page 조회할 페이지 번호
+     * @param user 로그인 유저
+     * @return 댓글 목록을 날짜순으로 정렬해서 반환
+     */
     public Page<CommentResponseDto> getLikeComments(int page, User user) {
         validateUser(user);
         Sort.Direction direction = Sort.Direction.DESC;
@@ -206,6 +219,52 @@ public class UserService {
         Pageable pageable = PageRequest.of(page, 5, sort);
         Page<Comment> comments = commentRepository.findLikedCommentsByUser(user, pageable);
         return comments.map(CommentResponseDto::new);
+    }
+
+    /**
+     * 팔로우 등록
+     * @param follower 로그인한 유저
+     * @param followingId 팔로윙 유저
+     */
+    @Transactional
+    public void followUser(User follower, Long followingId){
+        validateUser(follower);
+        User following = userRepository.findById(followingId).orElseThrow(() ->
+                new CustomException(ErrorType.NOT_FOUND_USER));
+        validateUser(following);
+
+        if(follower.getId().equals(following.getId())){
+            throw new CustomException(ErrorType.DUPLICATE_USER);
+        }
+
+        Optional<Follow> findFollow = followRepository.findByFollowerAndFollowing(follower, following);
+
+        if(findFollow.isPresent()){
+            throw new CustomException(ErrorType.ALREADY_FOLLOWING);
+        }
+
+        Follow follow = Follow.builder()
+                .follower(follower)
+                .following(following)
+                .build();
+
+        followRepository.save(follow);
+    }
+
+    @Transactional
+    public void deleteFollowUser(User follower, Long followingId) {
+        validateUser(follower);
+        User following = userRepository.findById(followingId).orElseThrow(() ->
+                new CustomException(ErrorType.NOT_FOUND_USER));
+        validateUser(following);
+
+        Optional<Follow> findFollow = followRepository.findByFollowerAndFollowing(follower, following);
+
+        if(findFollow.isEmpty()){
+            throw new CustomException(ErrorType.NOT_FOUND_FOLLOW);
+        }
+
+        followRepository.delete(findFollow.get());
     }
 
     /**
@@ -224,5 +283,6 @@ public class UserService {
             throw new CustomException(ErrorType.BLOCKED_USER);
         }
     }
+
 
 }
