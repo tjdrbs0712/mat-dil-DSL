@@ -33,45 +33,48 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
-
-        String tokenValue = jwtUtil.getAccessTokenFromRequest(req);
+        String accessToken = jwtUtil.getAccessTokenFromRequest(req);
         String refreshToken = jwtUtil.getRefreshTokenFromRequest(req);
+        if (StringUtils.hasText(accessToken)) {
+            accessToken = jwtUtil.substringToken(accessToken);
 
-        if (StringUtils.hasText(tokenValue)) {
-            // JWT 토큰 substring
-            tokenValue = jwtUtil.substringToken(tokenValue);
-
-            if (!jwtUtil.validateToken(tokenValue)) {
-                if(StringUtils.hasText(refreshToken)){
-                    refreshToken = jwtUtil.substringToken(refreshToken);
-                    if(!jwtUtil.validateRefreshToken(refreshToken)){
-                        log.error("RefreshToken Error");
-                        return;
-                    }
-                    jwtUtil.addJwtToCookie(JwtUtil.BEARER_PREFIX + tokenValue, JwtUtil.BEARER_PREFIX + refreshToken, res);
-                }
-            }
-
-            Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
-
-            try {
-                setAuthentication(info.getSubject());
-            } catch (Exception e) {
-                log.error(e.getMessage());
-                throw new CustomException(ErrorType.NOT_FOUND_AUTHENTICATION_INFO);
+            if (jwtUtil.validateToken(accessToken)) {
+                setAuthenticationFromToken(accessToken);
+            } else if (StringUtils.hasText(refreshToken)) {
+                handleRefreshToken(refreshToken, res);
             }
         }
 
         filterChain.doFilter(req, res);
     }
 
+    private void setAuthenticationFromToken(String token) {
+        Claims claims = jwtUtil.getUserInfoFromToken(token);
+        try {
+            setAuthentication(claims.getSubject());
+        } catch (Exception e) {
+            throw new CustomException(ErrorType.NOT_FOUND_AUTHENTICATION_INFO);
+        }
+    }
+
+    private void handleRefreshToken(String refreshToken, HttpServletResponse res) {
+        refreshToken = jwtUtil.substringToken(refreshToken);
+        if (jwtUtil.validateRefreshToken(refreshToken)) {
+            String newAccessToken = jwtUtil.generateAccessToken(refreshToken); // 새로운 access token 생성
+            jwtUtil.addJwtToCookie(newAccessToken, JwtUtil.BEARER_PREFIX + refreshToken, res);
+            setAuthenticationFromToken(jwtUtil.substringToken(newAccessToken)); // 새로운 access token으로 인증 설정
+            log.info("새로운 토큰 생성 완료!!");
+        } else {
+            throw new CustomException(ErrorType.EXPIRED_JWT);
+        }
+    }
+
     // 인증 처리
-    public void setAuthentication(String username) {
-        log.error(username);
+    private void setAuthentication(String username) {
+        log.debug("Authenticating user: {}", username);
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         Authentication authentication = createAuthentication(username);
         context.setAuthentication(authentication);
-
         SecurityContextHolder.setContext(context);
     }
 

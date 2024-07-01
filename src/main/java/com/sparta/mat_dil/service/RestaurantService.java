@@ -17,7 +17,6 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,7 +53,7 @@ public class RestaurantService {
         Sort sort = Sort.by(direction, "createdAt");
         Pageable pageable = PageRequest.of(page, 5, sort);
 //        return null;
-        return new PageImpl<>(restaurantRepository.findAll(pageable).stream().map(RestaurantResponseDto::new).collect(Collectors.toList()));
+        return new PageImpl<>(restaurantRepository.findAllActiveRestaurants(pageable).stream().map(RestaurantResponseDto::new).collect(Collectors.toList()));
     }
 
 
@@ -101,12 +100,12 @@ public class RestaurantService {
         //판매자가 아니고, 게시물을 작성한 판매자가 아닌경우 예외처리
         checkRestaurantSupplier(restaurantInfo, loginUser);
 
-        restaurantRepository.delete(restaurantInfo);
+        restaurantInfo.softDelete();
     }
 
     //음식점 존재 여부 확인
     public Restaurant findById(Long id){
-        return restaurantRepository.findById(id).orElseThrow(
+        return restaurantRepository.findIdActiveRestaurant(id).orElseThrow(
                 () -> new CustomException(ErrorType.NOT_FOUND_RESTAURANT)
         );
     }
@@ -128,7 +127,7 @@ public class RestaurantService {
     public FoodResponseDto saleFood(Long restaurantsId, FoodRequestDto foodRequestDto, User loginUser) {
 
         //해당 음식점이 없는 경우
-        Restaurant restaurantById= restaurantRepository.findById(restaurantsId).orElseThrow(
+        Restaurant restaurantById= restaurantRepository.findIdActiveRestaurant(restaurantsId).orElseThrow(
                 ()-> new CustomException(ErrorType.NOT_FOUND_RESTAURANT));
 
         //등록을 시도하는 점주 정보와 해당 음식점 점주 정보가 같지 않는 경우
@@ -146,7 +145,7 @@ public class RestaurantService {
         Sort.Direction direction = Sort.Direction.DESC;
         Sort sort = Sort.by(direction, "createdAt");
         Pageable pageable = PageRequest.of(page, 10, sort);
-        return new PageImpl<>(foodRepository.findByRestaurantId(pageable, restaurantId).stream().map(FoodResponseDto::new).collect(Collectors.toList()));
+        return new PageImpl<>(foodRepository.findByRestaurantId(restaurantId, pageable).stream().map(FoodResponseDto::new).collect(Collectors.toList()));
     }
 
     public FoodResponseDto getFood(Long restaurantsId, Long foodId) {
@@ -159,10 +158,10 @@ public class RestaurantService {
     @Transactional
     public FoodResponseDto updateFood(Long restaurantId, Long foodId, FoodRequestDto requestDto, User loginUser) {
         //해당 음식점이 없는 경우
-        Restaurant restaurantById= restaurantRepository.findById(restaurantId).orElseThrow(
+        Restaurant restaurantById= restaurantRepository.findIdActiveRestaurant(restaurantId).orElseThrow(
                 ()-> new CustomException(ErrorType.NOT_FOUND_RESTAURANT));
         //수정하려는 음식이 없는 경우
-        Food food=foodRepository.findById(foodId).orElseThrow(()->
+        Food food=foodRepository.findByIdAndActive(foodId).orElseThrow(()->
                 new CustomException(ErrorType.NOT_FOUND_FOOD));
         //수정을 시도하는 점주 정보와 해당 음식점 점주 정보가 같지 않는 경우
         if(!loginUser.getAccountId().equals(restaurantById.getUser().getAccountId())){
@@ -175,14 +174,14 @@ public class RestaurantService {
     @Transactional
     public void deleteFood(Long restaurantId, Long foodId, User loginUser) {
         //해당 음식점이 없는 경우
-        Restaurant restaurantById= restaurantRepository.findById(restaurantId).orElseThrow(
+        Restaurant restaurantById= restaurantRepository.findIdActiveRestaurant(restaurantId).orElseThrow(
                 ()-> new CustomException(ErrorType.NOT_FOUND_RESTAURANT));
         //수정하려는 음식이 없는 경우
-        Food food=foodRepository.findById(foodId).orElseThrow(()->
+        Food food=foodRepository.findByIdAndActive(foodId).orElseThrow(()->
                 new CustomException(ErrorType.NOT_FOUND_FOOD));
 
         checkRestaurantSupplier(restaurantById, loginUser);
 
-        foodRepository.delete(food);
+        food.softDelete();
     }
 }

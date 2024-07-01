@@ -1,10 +1,10 @@
 package com.sparta.mat_dil.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -28,11 +28,8 @@ public class Order extends Timestamped {
     @Column(nullable = false)
     private int total_price;
 
-    public void setTotalPrice(int totalPrice) {
-        this.total_price = totalPrice;
-    }
-
-    public Order (User user, Restaurant restaurant) {
+    @Builder
+    public Order(User user, Restaurant restaurant) {
         this.user = user;
         this.restaurant = restaurant;
     }

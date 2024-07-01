@@ -1,33 +1,36 @@
 package com.sparta.mat_dil.service;
 
-import com.sparta.mat_dil.dto.PasswordRequestDto;
-import com.sparta.mat_dil.dto.ProfileRequestDto;
-import com.sparta.mat_dil.dto.ProfileResponseDto;
-import com.sparta.mat_dil.dto.UserRequestDto;
-import com.sparta.mat_dil.entity.PasswordHistory;
-import com.sparta.mat_dil.entity.User;
-import com.sparta.mat_dil.entity.UserStatus;
+import com.sparta.mat_dil.dto.*;
+import com.sparta.mat_dil.entity.*;
 import com.sparta.mat_dil.enums.ErrorType;
 import com.sparta.mat_dil.exception.CustomException;
 import com.sparta.mat_dil.jwt.JwtUtil;
-import com.sparta.mat_dil.repository.PasswordHistoryRepository;
-import com.sparta.mat_dil.repository.UserRepository;
+import com.sparta.mat_dil.repository.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j(topic = "유저 서비스")
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RestaurantRepository restaurantRepository;
+    private final CommentRepository commentRepository;
     private final PasswordHistoryRepository passwordHistoryRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -97,32 +100,8 @@ public class UserService {
     @Transactional
     public ProfileResponseDto update(Long userId, ProfileRequestDto requestDto) {
         User user = findById(userId);
-        String newEncodePassword = null;
 
-        // 비밀번호 수정 시
-        if (requestDto.getPassword() != null) {
-            // 본인 확인을 위해 현재 비밀번호를 입력하여 올바른 경우
-            if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-                throw new CustomException(ErrorType.INVALID_PASSWORD);
-            }
-            //현재 비밀번호와 동일한 비밀번호로는 변경할 수 없음
-            if (requestDto.getPassword().equals(requestDto.getNewPassword())) {
-                throw new CustomException(ErrorType.PASSWORD_RECENTLY_USED);
-            }
-            System.out.println("adasdadasda\n\n\n\n");
-            // 최근 3번 안에 사용한 비밀번호는 사용할 수 없도록 제한
-            List<PasswordHistory> recentPasswords = passwordHistoryRepository.findTop3ByUserOrderByChangeDateDesc(user);
-            boolean isInPreviousPasswords = recentPasswords.stream()
-                    .anyMatch(pw -> passwordEncoder.matches(requestDto.getNewPassword(), pw.getPassword()));
-            if (isInPreviousPasswords) {
-                throw new CustomException(ErrorType.PASSWORD_RECENTLY_USED);
-            }
-
-            newEncodePassword = passwordEncoder.encode(requestDto.getNewPassword());
-
-            PasswordHistory passwordHistory = new PasswordHistory(user, newEncodePassword);
-            passwordHistoryRepository.save(passwordHistory);
-        }
+        String newEncodePassword = updatePasswordIfNeeded(user, requestDto);
 
         user.update(
                 Optional.ofNullable(newEncodePassword),
@@ -132,6 +111,46 @@ public class UserService {
 
         return new ProfileResponseDto(user);
     }
+
+    private String updatePasswordIfNeeded(User user, ProfileRequestDto requestDto) {
+        if (requestDto.getPassword() == null) {
+            return null;
+        }
+
+        validateCurrentPassword(user, requestDto.getPassword());
+        validateNewPassword(requestDto.getPassword(), requestDto.getNewPassword(), user);
+
+        String newEncodePassword = passwordEncoder.encode(requestDto.getNewPassword());
+
+        savePasswordHistory(user, newEncodePassword);
+
+        return newEncodePassword;
+    }
+
+    private void validateCurrentPassword(User user, String currentPassword) {
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new CustomException(ErrorType.INVALID_PASSWORD);
+        }
+    }
+
+    private void validateNewPassword(String currentPassword, String newPassword, User user) {
+        if (currentPassword.equals(newPassword)) {
+            throw new CustomException(ErrorType.PASSWORD_RECENTLY_USED);
+        }
+
+        List<PasswordHistory> recentPasswords = passwordHistoryRepository.findTop3ByUserOrderByChangeDateDesc(user);
+        boolean isInPreviousPasswords = recentPasswords.stream()
+                .anyMatch(pw -> passwordEncoder.matches(newPassword, pw.getPassword()));
+        if (isInPreviousPasswords) {
+            throw new CustomException(ErrorType.PASSWORD_RECENTLY_USED);
+        }
+    }
+
+    private void savePasswordHistory(User user, String newEncodePassword) {
+        PasswordHistory passwordHistory = new PasswordHistory(user, newEncodePassword);
+        passwordHistoryRepository.save(passwordHistory);
+    }
+
 
     @Transactional
     public void logout(User user, HttpServletResponse res, HttpServletRequest req) {
@@ -161,6 +180,42 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(
                 () -> new CustomException(ErrorType.NOT_FOUND_USER)
         );
+    }
+
+
+    public Page<RestaurantResponseDto> getLikeRestaurants(int page, User user) {
+        validateUser(user);
+        Sort.Direction direction = Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, "createdAt");
+        Pageable pageable = PageRequest.of(page, 5, sort);
+        Page<Restaurant> restaurants = restaurantRepository.findLikedRestaurantsByUser(user, pageable);
+        return restaurants.map(RestaurantResponseDto::new);
+    }
+
+    public Page<CommentResponseDto> getLikeComments(int page, User user) {
+        validateUser(user);
+        Sort.Direction direction = Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, "createdAt");
+        Pageable pageable = PageRequest.of(page, 5, sort);
+        Page<Comment> comments = commentRepository.findLikedCommentsByUser(user, pageable);
+        return comments.map(CommentResponseDto::new);
+    }
+
+    /**
+     * 유저 검증
+     * @param user 로그인 유저
+     */
+    public void validateUser(User user){
+        userRepository.findById(user.getId()).orElseThrow(() ->
+                new CustomException(ErrorType.NOT_FOUND_USER));
+
+        if(user.getUserStatus().equals(UserStatus.DEACTIVATE)){
+            throw new CustomException(ErrorType.DEACTIVATE_USER);
+        }
+
+        if(user.getUserStatus().equals(UserStatus.BLOCKED)){
+            throw new CustomException(ErrorType.BLOCKED_USER);
+        }
     }
 
 }

@@ -8,6 +8,5 @@ import java.util.List;
 @Getter
 @Setter
 public class OrderRequestDto {
-
     List<Long> foodId;
 }

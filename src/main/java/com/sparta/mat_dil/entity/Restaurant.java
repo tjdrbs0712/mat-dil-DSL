@@ -5,13 +5,18 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DialectOverride;
+import org.hibernate.annotations.Where;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "restaurant")
-public class Restaurant extends Timestamped{
+public class Restaurant extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,12 +32,17 @@ public class Restaurant extends Timestamped{
     private User user;
 
     @Column(nullable = false)
-    private Long likes = 0L;
+    private Long likeCount = 0L;
 
     @Column
     private Boolean pinned;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DeleteStatus deleteStatus = DeleteStatus.ACTIVE;
+
     public Restaurant(User loginUser, RestaurantRequestDto requestDto) {
+
         this.user = loginUser;
         this.restaurantName = requestDto.getRestaurantName();
         this.description = requestDto.getDescription();
@@ -43,9 +53,19 @@ public class Restaurant extends Timestamped{
         this.description = requestDto.getDescription();
     }
 
-    public Long updateLike(boolean islike){
-        if(islike){this.likes += 1;}
-        else{this.likes -= 1;}
-        return this.likes;
+    public void updateLike(boolean isLike) {
+        if (isLike) {
+            this.likeCount += 1;
+        } else {
+            this.likeCount -= 1;
+        }
+    }
+
+    public void softDelete() {
+        this.deleteStatus = DeleteStatus.DELETED;
+    }
+
+    public void restore() {
+        this.deleteStatus = DeleteStatus.ACTIVE;
     }
 }
