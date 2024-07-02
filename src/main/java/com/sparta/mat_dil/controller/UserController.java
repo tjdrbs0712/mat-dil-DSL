@@ -94,4 +94,13 @@ public class UserController {
         return ResponseEntity.ok(new ResponseMessageDto(ResponseStatus.UNFOLLOW_SUCCESS));
     }
 
+    @GetMapping("/follow")
+    public ResponseEntity<ResponseDataDto<Page<RestaurantResponseDto>>> getFollowRestaurants(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                             @RequestParam() int page,
+                                                                                             @RequestParam(required = false, defaultValue = "createdAt") String sortBy){
+        Page<RestaurantResponseDto> responseDtoPage = userService.getFollowRestaurants(userDetails.getUser(), page - 1, sortBy);
+
+        return ResponseEntity.ok(new ResponseDataDto<>(ResponseStatus.FOLLOWING_USER_POSTS_SUCCESS,responseDtoPage));
+    }
+
 }

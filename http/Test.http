@@ -180,3 +180,6 @@ DELETE http://localhost:8080/users/{{followingId}}/follow
 ### 6.로그아웃
 POST http://localhost:8080/users/logout
 Content-Type: application/json
+
+### 6.좋아요 유저 음식점 조회
+GET http://localhost:8080/users/follow?page=1&sortBy=user.name

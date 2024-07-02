@@ -7,7 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -48,6 +50,9 @@ public class User extends Timestamped{
 
     @Column
     private Long kakaoId;
+
+    @OneToMany(mappedBy = "follower")
+    private Set<Follow> following = new HashSet<>();
 
     //로그인시 리프레시 토큰 초기화
     @Transactional
