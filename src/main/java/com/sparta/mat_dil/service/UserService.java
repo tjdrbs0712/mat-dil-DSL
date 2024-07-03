@@ -281,7 +281,8 @@ public class UserService extends PageUtil {
 
         List<User> followingList = follower.getFollowing().stream()
                 .map(Follow::getFollowing).toList();
-        Page<Restaurant> restaurantPage = restaurantRepository.findByUsers(followingList, pageable);
+//        Page<Restaurant> restaurantPage = restaurantRepository.findByUsers(followingList, pageable);
+        Page<Restaurant> restaurantPage = restaurantRepository.getRestaurantLikeUserList(followingList, pageable);
         List<RestaurantResponseDto> responseDtoList = restaurantPage.getContent().stream()
                 .map(RestaurantResponseDto::new).toList();
 

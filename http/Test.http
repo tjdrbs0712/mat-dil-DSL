@@ -57,7 +57,7 @@ POST http://localhost:8080/restaurants
 Content-Type: application/json
 
 {
-  "restaurantName": "원할머니보쌈",
+  "restaurantName": "원할머니보쌈1",
   "description": "세상에서 가장 쫄깃하고 맛있는 보쌈집"
 }
 
@@ -76,7 +76,7 @@ POST http://localhost:8080/restaurants
 Content-Type: application/json
 
 {
-  "restaurantName": "돼지구이",
+  "restaurantName": "돼지구이223",
   "description": "돼지고기가 일품인 고깃집"
 }
 
@@ -155,7 +155,7 @@ Content-Type: application/json
 ############ [FLOW 5] 좋아요 등록 영역 ############
 ###############################################
 ### 음식점 ID, 댓글 ID
-@restaurantId_like = 1
+@restaurantId_like = 3
 @commentId_like = 1
 @followingId = 2
 
@@ -168,6 +168,9 @@ PUT http://localhost:8080/restaurants/{{restaurantId_like}}/like
 
 ### 좋아요 음식점 조회
 GET http://localhost:8080/users/restaurants/likes?page=1
+
+### 좋아요 댓글 조회
+GET http://localhost:8080/users/comments/likes?page=1
 
 ### 팔로우 등록
 POST http://localhost:8080/users/{{followingId}}/follow
@@ -182,4 +185,4 @@ POST http://localhost:8080/users/logout
 Content-Type: application/json
 
 ### 6.좋아요 유저 음식점 조회
-GET http://localhost:8080/users/follow?page=1&sortBy=user.name
+GET http://localhost:8080/users/follow?page=3&sortBy=id
