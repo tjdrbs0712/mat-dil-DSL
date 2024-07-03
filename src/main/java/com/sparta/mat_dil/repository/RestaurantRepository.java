@@ -22,6 +22,12 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     @Query("SELECT r FROM Restaurant r WHERE r.deleteStatus = 'ACTIVE' AND r.id = :id")
     Optional<Restaurant> findIdActiveRestaurant(@Param("id") Long id);
 
-    @Query("SELECT r FROM Restaurant r JOIN RestaurantLike rl ON r.id = rl.restaurant.id WHERE rl.user = :user AND rl.liked = true")
+    @Query("SELECT r FROM Restaurant r JOIN RestaurantLike rl ON r.id = rl.restaurant.id " +
+            "WHERE rl.user = :user AND rl.liked = true AND r.deleteStatus = 'ACTIVE'")
     Page<Restaurant> findLikedRestaurantsByUser(@Param("user") User user, Pageable pageable);
+
+    List<Restaurant> findByUser(User following);
+
+    @Query("SELECT r FROM Restaurant r WHERE r.user IN :users")
+    Page<Restaurant> findByUsers(@Param("users") List<User> users, Pageable pageable);
 }

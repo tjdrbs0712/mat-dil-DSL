@@ -6,27 +6,24 @@ import com.sparta.mat_dil.enums.ErrorType;
 import com.sparta.mat_dil.exception.CustomException;
 import com.sparta.mat_dil.jwt.JwtUtil;
 import com.sparta.mat_dil.repository.*;
+import com.sparta.mat_dil.util.PageUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j(topic = "유저 서비스")
-public class UserService {
+public class UserService extends PageUtil {
 
     private final UserRepository userRepository;
     private final RestaurantRepository restaurantRepository;
@@ -154,7 +151,6 @@ public class UserService {
         passwordHistoryRepository.save(passwordHistory);
     }
 
-
     @Transactional
     public void logout(User user, HttpServletResponse res, HttpServletRequest req) {
         user.logout();
@@ -190,7 +186,6 @@ public class UserService {
         );
     }
 
-
     /**
      * 음식점 좋아요 목록 조회
      * @param page 조회할 페이지 번호
@@ -223,23 +218,25 @@ public class UserService {
 
     /**
      * 팔로우 등록
-     * @param follower 로그인한 유저
+     * @param user 로그인한 유저
      * @param followingId 팔로윙 유저
      */
     @Transactional
-    public void followUser(User follower, Long followingId){
+    public void followUser(User user, Long followingId){
+        User follower = userRepository.findById(user.getId()).orElseThrow(() ->
+                new CustomException(ErrorType.NOT_FOUND_USER));
+
         validateUser(follower);
         User following = userRepository.findById(followingId).orElseThrow(() ->
                 new CustomException(ErrorType.NOT_FOUND_USER));
         validateUser(following);
-
         if(follower.getId().equals(following.getId())){
             throw new CustomException(ErrorType.DUPLICATE_USER);
         }
 
         Optional<Follow> findFollow = followRepository.findByFollowerAndFollowing(follower, following);
 
-        if(findFollow.isPresent()){
+        if(findFollow.isPresent()) {
             throw new CustomException(ErrorType.ALREADY_FOLLOWING);
         }
 
@@ -248,11 +245,16 @@ public class UserService {
                 .following(following)
                 .build();
 
+        follower.getFollowing().add(follow);
         followRepository.save(follow);
+
     }
 
+    //팔로우 삭제
     @Transactional
-    public void deleteFollowUser(User follower, Long followingId) {
+    public void deleteFollowUser(User user, Long followingId) {
+        User follower = userRepository.findById(user.getId()).orElseThrow(() ->
+                new CustomException(ErrorType.NOT_FOUND_USER));
         validateUser(follower);
         User following = userRepository.findById(followingId).orElseThrow(() ->
                 new CustomException(ErrorType.NOT_FOUND_USER));
@@ -264,7 +266,26 @@ public class UserService {
             throw new CustomException(ErrorType.NOT_FOUND_FOLLOW);
         }
 
+        follower.getFollowing().remove(findFollow.get());
         followRepository.delete(findFollow.get());
+    }
+
+    //팔로우 조회
+    @Transactional(readOnly = true)
+    public Page<RestaurantResponseDto> getFollowRestaurants(User user, int page, String sortBy) {
+        User follower = userRepository.findById(user.getId()).orElseThrow(() ->
+                new CustomException(ErrorType.NOT_FOUND_USER));
+        validateUser(follower);
+
+        Pageable pageable = createPageable(page, sortBy);
+
+        List<User> followingList = follower.getFollowing().stream()
+                .map(Follow::getFollowing).toList();
+        Page<Restaurant> restaurantPage = restaurantRepository.findByUsers(followingList, pageable);
+        List<RestaurantResponseDto> responseDtoList = restaurantPage.getContent().stream()
+                .map(RestaurantResponseDto::new).toList();
+
+        return new PageImpl<>(responseDtoList, pageable, restaurantPage.getTotalElements());
     }
 
     /**
@@ -283,6 +304,5 @@ public class UserService {
             throw new CustomException(ErrorType.BLOCKED_USER);
         }
     }
-
 
 }

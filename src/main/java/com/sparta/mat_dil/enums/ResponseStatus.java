@@ -20,6 +20,8 @@ public enum ResponseStatus {
     PASSWORD_UPDATE_SUCCESS(HttpStatus.OK, "비밀번호가 정상적으로 수정 되었습니다."),
     FOLLOW_SUCCESS(HttpStatus.OK, "팔로우 성공!"),
     UNFOLLOW_SUCCESS(HttpStatus.OK, "팔로우 취소 성공!"),
+    FOLLOWING_USER_POSTS_SUCCESS(HttpStatus.OK, "팔로윙 유저 음식점 조회 성공!"),
+
     // 음식점
     RESTAURANT_CREATE_SUCCESS(HttpStatus.OK, "음식점 등록에 성공하였습니다."),
     RESTAURANT_CHECK_SUCCESS(HttpStatus.OK, "음식점 조회에 성공하였습니다."),
