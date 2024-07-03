@@ -78,6 +78,7 @@ public class UserController {
         return ResponseEntity.ok(new ResponseDataDto<>(ResponseStatus.COMMENTS_CHECK_SUCCESS, commentResponseDto));
     }
 
+
     @PostMapping("/{id}/follow")
     public ResponseEntity<ResponseMessageDto> followUser(@PathVariable Long id,
                                                          @AuthenticationPrincipal UserDetailsImpl userDetails){

@@ -151,7 +151,6 @@ public class UserService extends PageUtil {
         passwordHistoryRepository.save(passwordHistory);
     }
 
-
     @Transactional
     public void logout(User user, HttpServletResponse res, HttpServletRequest req) {
         user.logout();
@@ -186,7 +185,6 @@ public class UserService extends PageUtil {
                 () -> new CustomException(ErrorType.NOT_FOUND_USER)
         );
     }
-
 
     /**
      * 음식점 좋아요 목록 조회
