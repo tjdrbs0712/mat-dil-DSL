@@ -20,7 +20,7 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 @Slf4j(topic = "레스토랑 레파지토리")
-public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom{
+public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom {
 
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -33,7 +33,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom{
                 .limit(pageable.getPageSize());
 
         for (Sort.Order order : pageable.getSort()) {
-            PathBuilder<Restaurant> pathBuilder = new PathBuilder<Restaurant>(restaurant.getType(), restaurant.getMetadata());
+            PathBuilder<Restaurant> pathBuilder = new PathBuilder<>(restaurant.getType(), restaurant.getMetadata());
             query.orderBy(new OrderSpecifier<>(
                     order.isAscending() ? Order.ASC : Order.DESC,
                     pathBuilder.get(order.getProperty(), Comparable.class)
@@ -54,7 +54,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom{
     @Override
     public Page<Restaurant> findLikedRestaurantsByUser(User user, Pageable pageable) {
         QRestaurant restaurant = QRestaurant.restaurant;
-        QRestaurantLike restaurantLike =QRestaurantLike.restaurantLike;
+        QRestaurantLike restaurantLike = QRestaurantLike.restaurantLike;
         JPAQuery<Restaurant> query = jpaQueryFactory.selectFrom(restaurant)
                 .join(restaurantLike).on(restaurantLike.restaurant.eq(restaurant))
                 .where(restaurantLike.user.eq(user)
@@ -73,9 +73,9 @@ public class RestaurantRepositoryImpl implements RestaurantRepositoryCustom{
                         .and(restaurant.deleteStatus.eq(DeleteStatus.ACTIVE)))
                 .fetchOne();
 
+
         List<Restaurant> results = query.fetch();
 
-        log.error("{}, {}", total, results.size());
         return new PageImpl<>(results, pageable, Optional.ofNullable(total).orElse(0L));
     }
 }

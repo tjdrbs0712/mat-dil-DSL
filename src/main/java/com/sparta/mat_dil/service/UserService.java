@@ -155,7 +155,7 @@ public class UserService extends PageUtil {
     public void logout(User user, HttpServletResponse res, HttpServletRequest req) {
         user.logout();
         Cookie[] cookies = req.getCookies();
-        String accessToken=jwtUtil.getAccessTokenFromRequest(req);
+        String accessToken = jwtUtil.getAccessTokenFromRequest(req);
         jwtUtil.addBlackListToken(accessToken.substring(7));
 
         if (cookies != null) {
@@ -188,6 +188,7 @@ public class UserService extends PageUtil {
 
     /**
      * 음식점 좋아요 목록 조회
+     *
      * @param page 조회할 페이지 번호
      * @param user 로그인 유저
      * @return 음식점 목록을 날짜순으로 정렬해서 반환
@@ -203,6 +204,7 @@ public class UserService extends PageUtil {
 
     /**
      * 댓글 좋아요 목록 조회
+     *
      * @param page 조회할 페이지 번호
      * @param user 로그인 유저
      * @return 댓글 목록을 날짜순으로 정렬해서 반환
@@ -218,25 +220,25 @@ public class UserService extends PageUtil {
 
     /**
      * 팔로우 등록
-     * @param user 로그인한 유저
+     *
+     * @param user        로그인한 유저
      * @param followingId 팔로윙 유저
      */
     @Transactional
-    public void followUser(User user, Long followingId){
+    public void followUser(User user, Long followingId) {
         User follower = userRepository.findById(user.getId()).orElseThrow(() ->
                 new CustomException(ErrorType.NOT_FOUND_USER));
-
         validateUser(follower);
         User following = userRepository.findById(followingId).orElseThrow(() ->
                 new CustomException(ErrorType.NOT_FOUND_USER));
         validateUser(following);
-        if(follower.getId().equals(following.getId())){
+        if (follower.getId().equals(following.getId())) {
             throw new CustomException(ErrorType.DUPLICATE_USER);
         }
 
         Optional<Follow> findFollow = followRepository.findByFollowerAndFollowing(follower, following);
 
-        if(findFollow.isPresent()) {
+        if (findFollow.isPresent()) {
             throw new CustomException(ErrorType.ALREADY_FOLLOWING);
         }
 
@@ -262,7 +264,7 @@ public class UserService extends PageUtil {
 
         Optional<Follow> findFollow = followRepository.findByFollowerAndFollowing(follower, following);
 
-        if(findFollow.isEmpty()){
+        if (findFollow.isEmpty()) {
             throw new CustomException(ErrorType.NOT_FOUND_FOLLOW);
         }
 
@@ -290,17 +292,18 @@ public class UserService extends PageUtil {
 
     /**
      * 유저 검증
+     *
      * @param user 로그인 유저
      */
-    public void validateUser(User user){
+    public void validateUser(User user) {
         userRepository.findById(user.getId()).orElseThrow(() ->
                 new CustomException(ErrorType.NOT_FOUND_USER));
 
-        if(user.getUserStatus().equals(UserStatus.DEACTIVATE)){
+        if (user.getUserStatus().equals(UserStatus.DEACTIVATE)) {
             throw new CustomException(ErrorType.DEACTIVATE_USER);
         }
 
-        if(user.getUserStatus().equals(UserStatus.BLOCKED)){
+        if (user.getUserStatus().equals(UserStatus.BLOCKED)) {
             throw new CustomException(ErrorType.BLOCKED_USER);
         }
     }

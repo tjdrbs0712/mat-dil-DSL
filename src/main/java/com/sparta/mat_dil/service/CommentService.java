@@ -30,7 +30,7 @@ public class CommentService {
         Restaurant restaurant = validateRestaurantId(restaurantId);
 
         //본인 음식점 검증
-        if(restaurant.getUser().getAccountId().equals(user.getAccountId())){
+        if (restaurant.getUser().getAccountId().equals(user.getAccountId())) {
             throw new CustomException(ErrorType.NOT_ACCEPTED_COMMENT);
         }
 

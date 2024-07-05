@@ -26,8 +26,10 @@ public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final FoodRepository foodRepository;
 
-    /** [createRestaurant()] 음식점 등록
-     * @param loginUser 로그인 회원 정보
+    /**
+     * [createRestaurant()] 음식점 등록
+     *
+     * @param loginUser  로그인 회원 정보
      * @param requestDto 등록할 음식점 정보
      * @return 음식점 정보
      **/
@@ -43,7 +45,9 @@ public class RestaurantService {
     }
 
 
-    /** [getRestaurantList()] 전체 음식점 조회
+    /**
+     * [getRestaurantList()] 전체 음식점 조회
+     *
      * @param page 페이지 개수
      * @return 음식점 정보
      **/
@@ -57,7 +61,9 @@ public class RestaurantService {
     }
 
 
-    /** [getRestaurant()] 특정 음식점 조회
+    /**
+     * [getRestaurant()] 특정 음식점 조회
+     *
      * @param id 페이지 개수
      * @return 음식점 정보
      **/
@@ -69,7 +75,9 @@ public class RestaurantService {
     }
 
 
-    /** [updateRestaurant()] 특정 음식점 수정
+    /**
+     * [updateRestaurant()] 특정 음식점 수정
+     *
      * @param id 페이지 개수
      * @return 음식점 정보
      **/
@@ -87,8 +95,9 @@ public class RestaurantService {
     }
 
 
-
-    /** [deleteRestaurant()] 특정 음식점 수정
+    /**
+     * [deleteRestaurant()] 특정 음식점 수정
+     *
      * @param id 음식점 정보
      * @return 음식점 정보
      **/
@@ -104,7 +113,7 @@ public class RestaurantService {
     }
 
     //음식점 존재 여부 확인
-    public Restaurant findById(Long id){
+    public Restaurant findById(Long id) {
         return restaurantRepository.findIdActiveRestaurant(id).orElseThrow(
                 () -> new CustomException(ErrorType.NOT_FOUND_RESTAURANT)
         );
@@ -119,7 +128,7 @@ public class RestaurantService {
 
     // 권한 확인 메서드 - 판매자가 아니고, 게시물을 작성한 판매자가 아닌경우 예외처리
     private void checkRestaurantSupplier(Restaurant restaurantInfo, User loginUser) {
-        if(loginUser.getUserType() != UserType.SUPPLIER || !restaurantInfo.getUser().getAccountId().equals(loginUser.getAccountId())) {
+        if (loginUser.getUserType() != UserType.SUPPLIER || !restaurantInfo.getUser().getAccountId().equals(loginUser.getAccountId())) {
             throw new CustomException(ErrorType.NO_ATUTHENTIFICATION);
         }
     }
@@ -127,15 +136,15 @@ public class RestaurantService {
     public FoodResponseDto saleFood(Long restaurantsId, FoodRequestDto foodRequestDto, User loginUser) {
 
         //해당 음식점이 없는 경우
-        Restaurant restaurantById= restaurantRepository.findIdActiveRestaurant(restaurantsId).orElseThrow(
-                ()-> new CustomException(ErrorType.NOT_FOUND_RESTAURANT));
+        Restaurant restaurantById = restaurantRepository.findIdActiveRestaurant(restaurantsId).orElseThrow(
+                () -> new CustomException(ErrorType.NOT_FOUND_RESTAURANT));
 
         //등록을 시도하는 점주 정보와 해당 음식점 점주 정보가 같지 않는 경우
-        if(!loginUser.getAccountId().equals(restaurantById.getUser().getAccountId())){
+        if (!loginUser.getAccountId().equals(restaurantById.getUser().getAccountId())) {
             throw new CustomException(ErrorType.NO_ATUTHENTIFICATION);
         }
 
-        Food food=new Food(restaurantById, foodRequestDto);
+        Food food = new Food(restaurantById, foodRequestDto);
         foodRepository.save(food);
         return new FoodResponseDto(food);
     }
@@ -149,22 +158,22 @@ public class RestaurantService {
     }
 
     public FoodResponseDto getFood(Long restaurantsId, Long foodId) {
-       Food food=foodRepository.findByIdAndRestaurant_Id(foodId, restaurantsId).orElseThrow(()->
-               new CustomException(ErrorType.NOT_FOUND_FOOD));
+        Food food = foodRepository.findByIdAndRestaurant_Id(foodId, restaurantsId).orElseThrow(() ->
+                new CustomException(ErrorType.NOT_FOUND_FOOD));
 
-       return new FoodResponseDto(food);
+        return new FoodResponseDto(food);
     }
 
     @Transactional
     public FoodResponseDto updateFood(Long restaurantId, Long foodId, FoodRequestDto requestDto, User loginUser) {
         //해당 음식점이 없는 경우
-        Restaurant restaurantById= restaurantRepository.findIdActiveRestaurant(restaurantId).orElseThrow(
-                ()-> new CustomException(ErrorType.NOT_FOUND_RESTAURANT));
+        Restaurant restaurantById = restaurantRepository.findIdActiveRestaurant(restaurantId).orElseThrow(
+                () -> new CustomException(ErrorType.NOT_FOUND_RESTAURANT));
         //수정하려는 음식이 없는 경우
-        Food food=foodRepository.findByIdAndActive(foodId).orElseThrow(()->
+        Food food = foodRepository.findByIdAndActive(foodId).orElseThrow(() ->
                 new CustomException(ErrorType.NOT_FOUND_FOOD));
         //수정을 시도하는 점주 정보와 해당 음식점 점주 정보가 같지 않는 경우
-        if(!loginUser.getAccountId().equals(restaurantById.getUser().getAccountId())){
+        if (!loginUser.getAccountId().equals(restaurantById.getUser().getAccountId())) {
             throw new CustomException(ErrorType.NO_ATUTHENTIFICATION);
         }
         food.update(requestDto);
@@ -174,10 +183,10 @@ public class RestaurantService {
     @Transactional
     public void deleteFood(Long restaurantId, Long foodId, User loginUser) {
         //해당 음식점이 없는 경우
-        Restaurant restaurantById= restaurantRepository.findIdActiveRestaurant(restaurantId).orElseThrow(
-                ()-> new CustomException(ErrorType.NOT_FOUND_RESTAURANT));
+        Restaurant restaurantById = restaurantRepository.findIdActiveRestaurant(restaurantId).orElseThrow(
+                () -> new CustomException(ErrorType.NOT_FOUND_RESTAURANT));
         //수정하려는 음식이 없는 경우
-        Food food=foodRepository.findByIdAndActive(foodId).orElseThrow(()->
+        Food food = foodRepository.findByIdAndActive(foodId).orElseThrow(() ->
                 new CustomException(ErrorType.NOT_FOUND_FOOD));
 
         checkRestaurantSupplier(restaurantById, loginUser);

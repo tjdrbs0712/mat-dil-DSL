@@ -78,26 +78,28 @@ public class OrderService {
 
     /**
      * 유저 검증
+     *
      * @param user 로그인 유저
      */
-    public void validateUser(User user){
+    public void validateUser(User user) {
         userRepository.findById(user.getId()).orElseThrow(() ->
                 new CustomException(ErrorType.NOT_FOUND_USER));
 
-        if(user.getUserStatus().equals(UserStatus.DEACTIVATE)){
+        if (user.getUserStatus().equals(UserStatus.DEACTIVATE)) {
             throw new CustomException(ErrorType.DEACTIVATE_USER);
         }
 
-        if(user.getUserStatus().equals(UserStatus.BLOCKED)){
+        if (user.getUserStatus().equals(UserStatus.BLOCKED)) {
             throw new CustomException(ErrorType.BLOCKED_USER);
         }
     }
 
     /**
      * 레스토랑 검증
+     *
      * @param restaurantId 레스토랑 id
      */
-    public Restaurant validateRestaurant(Long restaurantId){
+    public Restaurant validateRestaurant(Long restaurantId) {
         return restaurantRepository.findById(restaurantId).orElseThrow(() ->
                 new CustomException(ErrorType.NOT_FOUND_RESTAURANT));
     }
